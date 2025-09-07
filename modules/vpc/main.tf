@@ -42,3 +42,47 @@ resource "aws_route_table_association" "public_assoc" {
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
+
+# Add these resources to your modules/vpc/main.tf file
+
+# Elastic IPs for NAT Gateways
+resource "aws_eip" "nat" {
+  count  = length(var.public_subnets)
+  domain = "vpc"
+  tags = {
+    Name = "${var.name}-eip-${count.index}"
+  }
+}
+
+# NAT Gateways
+resource "aws_nat_gateway" "nat" {
+  count         = length(var.public_subnets)
+  allocation_id = aws_eip.nat[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
+  tags = {
+    Name = "${var.name}-nat-${count.index}"
+  }
+  depends_on = [aws_internet_gateway.igw]
+}
+
+# Private Route Tables (one per AZ for HA)
+resource "aws_route_table" "private" {
+  count  = length(var.private_subnets)
+  vpc_id = aws_vpc.this.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat[count.index].id
+  }
+
+  tags = {
+    Name = "${var.name}-private-rt-${count.index}"
+  }
+}
+
+# Private Route Table Associations
+resource "aws_route_table_association" "private" {
+  count          = length(aws_subnet.private)
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private[count.index].id
+}
