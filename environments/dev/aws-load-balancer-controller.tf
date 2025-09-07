@@ -1,7 +1,7 @@
 # AWS Load Balancer Controller Resources
-# (Place this in a separate file: aws-load-balancer-controller.tf)
+# Note: Data sources and providers should be in main.tf
 
-# Data source for OIDC provider (should already exist from your EKS setup)
+# Data source for OIDC provider
 data "aws_iam_openid_connect_provider" "eks_oidc" {
   url = data.aws_eks_cluster.dev_cluster.identity[0].oidc[0].issuer
 }
@@ -39,22 +39,6 @@ resource "aws_iam_role" "aws_load_balancer_controller" {
 resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller_policy" {
   role       = aws_iam_role.aws_load_balancer_controller.name
   policy_arn = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
-}
-
-# Kubernetes provider (add this if not already in your main.tf)
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.dev_cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.dev_cluster.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.dev_cluster.token
-}
-
-# Helm provider (add this if not already in your main.tf)
-provider "helm" {
-  kubernetes {
-    host                   = data.aws_eks_cluster.dev_cluster.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.dev_cluster.certificate_authority[0].data)
-    token                  = data.aws_eks_cluster_auth.dev_cluster.token
-  }
 }
 
 # Kubernetes Service Account for AWS Load Balancer Controller
@@ -106,7 +90,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   ]
 }
 
-# Output the ALB DNS name for reference
+# Output the ALB DNS name for reference (only if you want to keep your existing ALB)
 output "alb_dns_name" {
   description = "DNS name of the load balancer"
   value       = module.alb.alb_dns_name
