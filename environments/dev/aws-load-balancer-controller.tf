@@ -1,5 +1,13 @@
 # AWS Load Balancer Controller Resources
-# Note: Data sources and providers should be in main.tf
+
+# Data sources for EKS cluster (needed for this file)
+data "aws_eks_cluster" "dev_cluster" {
+  name = "dev-eks"
+}
+
+data "aws_eks_cluster_auth" "dev_cluster" {
+  name = "dev-eks"
+}
 
 # Data source for OIDC provider
 data "aws_iam_openid_connect_provider" "eks_oidc" {
