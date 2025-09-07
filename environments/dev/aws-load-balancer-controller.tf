@@ -68,30 +68,17 @@ resource "helm_release" "aws_load_balancer_controller" {
   namespace  = "kube-system"
   version    = "1.4.4"
 
-  set {
-    name  = "clusterName"
-    value = "dev-eks"
-  }
-
-  set {
-    name  = "serviceAccount.create"
-    value = "false"
-  }
-
-  set {
-    name  = "serviceAccount.name"
-    value = kubernetes_service_account.aws_load_balancer_controller.metadata[0].name
-  }
-
-  set {
-    name  = "region"
-    value = "eu-north-1"
-  }
-
-  set {
-    name  = "vpcId"
-    value = module.vpc.vpc_id
-  }
+  values = [
+    yamlencode({
+      clusterName = "dev-eks"
+      serviceAccount = {
+        create = false
+        name   = kubernetes_service_account.aws_load_balancer_controller.metadata[0].name
+      }
+      region = "eu-north-1"
+      vpcId  = module.vpc.vpc_id
+    })
+  ]
 
   depends_on = [
     kubernetes_service_account.aws_load_balancer_controller
