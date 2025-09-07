@@ -17,10 +17,10 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-north-1"  # same region as your ECR images
+  region = "eu-north-1"
 }
 
-# Data sources for EKS cluster info
+# Data sources for EKS cluster
 data "aws_eks_cluster" "dev_cluster" {
   name = "dev-eks"
 }
@@ -37,7 +37,7 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  kubernetes {
+  kubernetes = {
     host                   = data.aws_eks_cluster.dev_cluster.endpoint
     cluster_ca_certificate = base64decode(data.aws_eks_cluster.dev_cluster.certificate_authority[0].data)
     token                  = data.aws_eks_cluster_auth.dev_cluster.token
