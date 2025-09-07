@@ -29,13 +29,14 @@ data "aws_eks_cluster_auth" "dev_cluster" {
   name = "dev-eks"
 }
 
-# Kubernetes and Helm providers
+# Kubernetes provider
 provider "kubernetes" {
   host                   = data.aws_eks_cluster.dev_cluster.endpoint
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.dev_cluster.certificate_authority[0].data)
   token                  = data.aws_eks_cluster_auth.dev_cluster.token
 }
 
+# Helm provider  
 provider "helm" {
   kubernetes = {
     host                   = data.aws_eks_cluster.dev_cluster.endpoint
