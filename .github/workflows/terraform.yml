@@ -48,6 +48,6 @@ jobs:
 
       # 6. Terraform Apply (optional, only on main branch)
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/master'
         working-directory: ./environments/${{ env.ENV }}
         run: terraform apply -auto-approve tfplan
